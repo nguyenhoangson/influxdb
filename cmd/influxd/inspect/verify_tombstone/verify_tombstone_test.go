@@ -42,8 +42,9 @@ func TestVerifies_InvalidFileType(t *testing.T) {
 
 // Run tests on an empty Tombstone file (treated as v1)
 func TestVerifies_InvalidEmptyFile(t *testing.T) {
-	path, _ := NewTempTombstone(t)
+	path, file := NewTempTombstone(t)
 	defer os.RemoveAll(path)
+	defer file.Close()
 
 	verify := NewVerifyTombstoneCommand()
 	verify.SetArgs([]string{"--engine-path", path})
@@ -61,6 +62,7 @@ func TestVerifies_InvalidEmptyFile(t *testing.T) {
 func TestVerifies_InvalidV2(t *testing.T) {
 	path, file := NewTempTombstone(t)
 	defer os.RemoveAll(path)
+	defer file.Close()
 
 	WriteTombstoneHeader(t, file, v2header)
 	WriteBadData(t, file)
@@ -75,6 +77,7 @@ func TestVerifies_InvalidV2(t *testing.T) {
 func TestVerifies_ValidTS(t *testing.T) {
 	path, file := NewTempTombstone(t)
 	defer os.RemoveAll(path)
+	defer file.Close()
 
 	ts := tsm1.NewTombstoner(file.Name(), nil)
 	require.NoError(t, ts.Add([][]byte{[]byte("foobar")}))
@@ -91,6 +94,7 @@ func TestVerifies_ValidTS(t *testing.T) {
 func TestVerifies_InvalidV3(t *testing.T) {
 	path, file := NewTempTombstone(t)
 	defer os.RemoveAll(path)
+	defer file.Close()
 
 	WriteTombstoneHeader(t, file, v3header)
 	WriteBadData(t, file)
@@ -106,6 +110,7 @@ func TestVerifies_InvalidV3(t *testing.T) {
 func TestVerifies_InvalidV4(t *testing.T) {
 	path, file := NewTempTombstone(t)
 	defer os.RemoveAll(path)
+	defer file.Close()
 
 	WriteTombstoneHeader(t, file, v4header)
 	WriteBadData(t, file)
@@ -122,6 +127,7 @@ func TestVerifies_InvalidV4(t *testing.T) {
 func TestTombstone_VeryVeryVerbose(t *testing.T) {
 	path, file := NewTempTombstone(t)
 	defer os.RemoveAll(path)
+	defer file.Close()
 
 	WriteTombstoneHeader(t, file, v4header)
 	WriteBadData(t, file)
