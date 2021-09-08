@@ -37,7 +37,7 @@ type cmdOuts struct {
 	expectErr           bool
 	expectBuiltIndex    bool
 	expectCompactSeries bool
-	sfile               *tsdb.SeriesFile
+	sfilePath           string
 }
 
 func Test_BuildTSI_ShardID_Without_BucketID(t *testing.T) {
@@ -233,10 +233,9 @@ func Test_BuildTSI_Valid_Compact_Series(t *testing.T) {
 	os.MkdirAll(filepath.Join(tempDir, "data", "12345", "_series"), 0777)
 
 	// Create new series file
-	sfile := tsdb.NewSeriesFile(filepath.Join(tempDir, "data", "12345", "_series"))
-	err := sfile.Open()
-	require.NoError(t, err)
-	defer sfile.Close()
+	sfilePath := filepath.Join(tempDir, "data", "12345", "_series")
+	sfile := tsdb.NewSeriesFile(sfilePath)
+	require.NoError(t, sfile.Open())
 
 	// Generate a bunch of keys.
 	var mms [][]byte
@@ -247,8 +246,9 @@ func Test_BuildTSI_Valid_Compact_Series(t *testing.T) {
 	}
 
 	// Add all to the series file.
-	_, err = sfile.CreateSeriesListIfNotExists(mms, tagSets)
+	_, err := sfile.CreateSeriesListIfNotExists(mms, tagSets)
 	require.NoError(t, err)
+	require.NoError(t, sfile.Close())
 
 	params := cmdParams{
 		dataPath:          filepath.Join(tempDir, "data"),
@@ -262,7 +262,7 @@ func Test_BuildTSI_Valid_Compact_Series(t *testing.T) {
 
 	outs := cmdOuts{
 		expectCompactSeries: true,
-		sfile:               sfile,
+		sfilePath:           sfilePath,
 	}
 
 	runCommand(t, params, outs)
@@ -356,8 +356,12 @@ func runCommand(t *testing.T, params cmdParams, outs cmdOuts) {
 	}
 
 	if outs.expectCompactSeries {
+		sfile := tsdb.NewSeriesFile(outs.sfilePath)
+		require.NoError(t, sfile.Open())
+		defer sfile.Close()
+
 		// Get size of all partitions before series compaction
-		beforeSize, err := outs.sfile.FileSize()
+		beforeSize, err := sfile.FileSize()
 		require.NoError(t, err)
 
 		// Run command with series compaction option chosen
@@ -367,7 +371,7 @@ func runCommand(t *testing.T, params cmdParams, outs cmdOuts) {
 		require.DirExists(t, filepath.Join(params.dataPath, "12345", "_series"))
 
 		// Get size of all partitions after series compaction
-		afterSize, err := outs.sfile.FileSize()
+		afterSize, err := sfile.FileSize()
 		require.NoError(t, err)
 
 		// Check that collective size of all series partitions has decreased after compaction

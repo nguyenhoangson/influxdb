@@ -231,7 +231,6 @@ func (buildTSICmd *buildTSI) compactSeriesFilePartition(path string) error {
 	if err := p.Open(); err != nil {
 		return fmt.Errorf("cannot open partition: path=%s err=%w", path, err)
 	}
-	defer p.Close()
 
 	// Loop over segments and compact.
 	indexPath := p.IndexPath()
@@ -255,7 +254,7 @@ func (buildTSICmd *buildTSI) compactSeriesFilePartition(path string) error {
 		src := dst + tmpExt
 
 		buildTSICmd.Logger.Debug("Renaming new segment", zap.String("prev", src), zap.String("new", dst))
-		if err = file.RenameFile(src, dst); err != nil && !os.IsNotExist(err) {
+		if err := file.RenameFile(src, dst); err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("serious failure. Please rebuild index and series file: %w", err)
 		}
 	}

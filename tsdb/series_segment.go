@@ -273,14 +273,14 @@ func (s *SeriesSegment) CompactToPath(path string, index *SeriesIndex) error {
 	}
 	defer dst.Close()
 
-	if err = dst.InitForWrite(); err != nil {
+	if err := dst.InitForWrite(); err != nil {
 		return err
 	}
 
 	// Iterate through the segment and write any entries to a new segment
 	// that exist in the index.
 	var buf []byte
-	if err = s.ForEachEntry(func(flag uint8, id uint64, _ int64, key []byte) error {
+	if err := s.ForEachEntry(func(flag uint8, id uint64, _ int64, key []byte) error {
 		if index.IsDeleted(id) {
 			return nil // series id has been deleted from index
 		} else if flag == SeriesEntryTombstoneFlag {
