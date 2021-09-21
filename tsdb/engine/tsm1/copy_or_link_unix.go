@@ -15,4 +15,3 @@ func copyOrLink(oldPath, newPath string) error {
 	}
 	return nil
 }
-
