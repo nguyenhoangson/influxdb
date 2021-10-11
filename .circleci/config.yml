@@ -442,7 +442,6 @@ jobs:
           name: Restore GOPATH/pkg/mod
           keys:
             - influxdb-gomod-sum-{{ checksum "go.sum" }}
-      - run: make checktidy
       - save_cache:
           name: Save GOPATH/pkg/mod
           key: influxdb-gomod-sum-{{ checksum "go.sum" }}
@@ -456,6 +455,10 @@ jobs:
       - run:
           name: Check go version
           command: ./scripts/ci/check-system-go-matches-go-mod.sh
+          when: always
+      - run:
+          name: Check tidy go.sum
+          command: make checktidy
           when: always
       - run:
           name: Check flag generation
