@@ -53,7 +53,6 @@ workflows:
     when:
       not: << pipeline.parameters.aws_teardown >>
     jobs:
-      - godeps
       - test-race:
           # TODO: Remove this alias as part of https://github.com/influxdata/influxdb/issues/22623
           name: gotest
@@ -86,21 +85,13 @@ workflows:
           executor: windows
           requires:
             - test-build-amd64-windows
-      - fluxtest:
-          requires:
-            - godeps
-      - tlstest:
-          requires:
-            - godeps
+      - fluxtest
+      - tlstest
       - lint:
           # TODO: Remove this alias as part of https://github.com/influxdata/influxdb/issues/22623
           name: golint
-      - build:
-          requires:
-            - godeps
-      - cross_build:
-          requires:
-            - godeps
+      - build
+      - cross_build
       - e2e-monitor-ci:
           filters:
             branches:
@@ -179,7 +170,6 @@ workflows:
                 - master
     jobs:
       - changelog
-      - godeps
       - test-race:
           # TODO: Remove this alias as part of https://github.com/influxdata/influxdb/issues/22623
           name: gotest
@@ -215,12 +205,8 @@ workflows:
       - lint:
           # TODO: Remove this alias as part of https://github.com/influxdata/influxdb/issues/22623
           name: golint
-      - fluxtest:
-          requires:
-            - godeps
-      - tlstest:
-          requires:
-            - godeps
+      - fluxtest
+      - tlstest
       - deploy_nightly:
           requires:
             - changelog
@@ -430,24 +416,6 @@ jobs:
   ### Backend-only jobs ###
   #########################
 
-  godeps:
-    docker:
-      - image: cimg/go:1.17.1
-    environment:
-      TMPDIR: /mnt/ramdisk
-    working_directory: /home/circleci/go/src/github.com/influxdata/influxdb
-    steps:
-      - checkout
-      - restore_cache:
-          name: Restore GOPATH/pkg/mod
-          keys:
-            - influxdb-gomod-sum-{{ checksum "go.sum" }}
-      - save_cache:
-          name: Save GOPATH/pkg/mod
-          key: influxdb-gomod-sum-{{ checksum "go.sum" }}
-          paths:
-            - /home/circleci/go/pkg/mod
-
   lint:
     executor: cross-builder
     steps:
@@ -545,10 +513,6 @@ jobs:
     working_directory: /home/circleci/go/src/github.com/influxdata/influxdb
     steps:
       - checkout
-      - restore_cache:
-          name: Restore GOPATH/pkg/mod
-          keys:
-            - influxdb-gomod-sum-{{ checksum "go.sum" }}
       - install_core_deps
       - run: make test-flux
 
@@ -560,10 +524,6 @@ jobs:
     working_directory: /home/circleci/go/src/github.com/influxdata/influxdb
     steps:
       - checkout
-      - restore_cache:
-          name: Restore GOPATH/pkg/mod
-          keys:
-            - influxdb-gomod-sum-{{ checksum "go.sum" }}
       - install_core_deps
       - run: make test-tls
 
@@ -580,10 +540,6 @@ jobs:
     working_directory: /home/circleci/go/src/github.com/influxdata/influxdb
     steps:
       - checkout
-      - restore_cache:
-          name: Restore GOPATH/pkg/mod
-          keys:
-            - influxdb-gomod-sum-{{ checksum "go.sum" }}
       - install_core_deps
       - install_cross_bin_deps
       # Build the static binary for linux
@@ -632,10 +588,6 @@ jobs:
           command: |
             sudo mkdir -p ${TMPDIR}
             sudo mount -t tmpfs -o size=4G tmpfs ${TMPDIR}
-      - restore_cache:
-          name: Restore GOPATH/pkg/mod
-          keys:
-            - influxdb-gomod-sum-{{ checksum "go.sum" }}
       - install_core_deps
       - upgrade_go
       - run:
@@ -799,10 +751,6 @@ jobs:
           command: |
             sudo mkdir -p ${TMPDIR}
             sudo mount -t tmpfs -o size=4G tmpfs ${TMPDIR}
-      - restore_cache:
-          name: Restore GOPATH/pkg/mod
-          keys:
-            - influxdb-gomod-sum-{{ checksum "go.sum" }}
       - install_core_deps
       - upgrade_go
       - run:
