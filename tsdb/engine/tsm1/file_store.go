@@ -248,7 +248,7 @@ func NewFileStore(dir string) *FileStore {
 		},
 		obs:           noFileStoreObserver{},
 		parseFileName: DefaultParseFileName,
-		copyFiles: 	   runtime.GOOS == "windows",
+		copyFiles:     runtime.GOOS == "windows",
 	}
 	fs.purger.fileStore = fs
 	return fs
