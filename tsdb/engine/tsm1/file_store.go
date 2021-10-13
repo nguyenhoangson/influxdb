@@ -1094,10 +1094,12 @@ func (f *FileStore) MakeSnapshotLinks(destPath string, files []TSMFile) (returnE
 
 func (f *FileStore) copyOrLink(oldpath string, newpath string) error {
 	if f.copyFiles {
+		f.logger.Info("copying backup snapshots", zap.String("OldPath", oldpath), zap.String("NewPath", newpath))
 		if err := f.copyNotLink(oldpath, newpath); err != nil {
 			return err
 		}
 	} else {
+		f.logger.Info("linking backup snapshots", zap.String("OldPath", oldpath), zap.String("NewPath", newpath))
 		if err := f.linkNotCopy(oldpath, newpath); err != nil {
 			return err
 		}
@@ -1148,6 +1150,7 @@ func (f *FileStore) linkNotCopy(oldPath, newPath string) error {
 	if err := os.Link(oldPath, newPath); err != nil {
 		if errors.Is(err, syscall.EPERM) {
 			if fi, e := os.Stat(oldPath); e == nil && !fi.IsDir() {
+				f.logger.Info("operating system does not support hard links, switching to copies for backup", zap.String("OldPath", oldPath), zap.String("NewPath", newPath))
 				// Force future snapshots to copy
 				f.copyFiles = true
 				return f.copyNotLink(oldPath, newPath)
