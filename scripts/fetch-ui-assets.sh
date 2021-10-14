@@ -20,7 +20,7 @@ declare -r STATIC_DIR="$ROOT_DIR/static"
 
 # This must be updated depending on the actual sha256 checksum of the tar file
 # attached to the release.
-EXPECTED_UI_CHECKSUM=a3a138ad25edb9ea8517a4598da0a4b477d840c15a041e6447851acbf95ac010
+EXPECTED_UI_CHECKSUM=1bfa93d4954bda5189eb5fed1698ba68d20c6357687a76da4400d44c84480d7c
 
 # Download the tar file containing the built UI assets.
 curl -L https://github.com/influxdata/ui/releases/download/OSS-Master/build.tar.gz --output build.tar.gz
